@@ -1,0 +1,228 @@
+# Seed skill graph: security / identity & access (v1 domain).
+# Schema and rules: see SPEC.md §4 and §8. Validate with:
+#   python3 tools/validate.py graph/security.yaml
+domain: security
+version: 0.1.0
+
+skills:
+  - id: security-fundamentals
+    name: Security Fundamentals
+    version: 1.0.0
+    skill_path: skills/security-fundamentals/SKILL.md
+    levels:
+      1: { can: "Explain CIA, least privilege, defence in depth; spot obvious flaws in review", assessment: eval:secfund-l1 }
+      2: { can: "Apply secure defaults and least privilege when implementing a feature", assessment: eval:secfund-l2 }
+      3: { can: "Set a system's security baseline and review standards", assessment: eval:secfund-l3 }
+    expires_after: 365d
+
+  - id: cryptography-basics
+    name: Applied Cryptography Basics
+    version: 1.0.0
+    skill_path: skills/cryptography-basics/SKILL.md
+    levels:
+      1: { can: "Explain hashing, symmetric/asymmetric encryption, signatures; flag misuse", assessment: eval:crypto-l1 }
+      2: { can: "Use vetted libraries correctly (AEAD, KDFs, signature verification)", assessment: eval:crypto-l2 }
+      3: { can: "Choose algorithms and key lifecycles for a system", assessment: eval:crypto-l3 }
+    requires:
+      1:
+        all:
+          - { skill: security-fundamentals, level: 1, rationale: "Crypto choices are only meaningful against a stated threat and CIA goal" }
+    expires_after: 365d
+
+  - id: identity-fundamentals
+    name: Identity Fundamentals
+    version: 1.0.0
+    skill_path: skills/identity-fundamentals/SKILL.md
+    levels:
+      1: { can: "Explain principals, identities, credentials, sessions, identity lifecycle", assessment: eval:ident-l1 }
+      2: { can: "Model users, services and workloads as identities in a system", assessment: eval:ident-l2 }
+      3: { can: "Design an organisation's identity model and lifecycle", assessment: eval:ident-l3 }
+    requires:
+      1:
+        all:
+          - { skill: security-fundamentals, level: 1, rationale: "Identity exists to enforce least privilege and accountability" }
+    expires_after: 365d
+
+  - id: authn
+    name: Authentication
+    version: 1.0.0
+    skill_path: skills/authn/SKILL.md
+    complements: [secrets-management]
+    levels:
+      1: { can: "Explain factors, MFA, session and token handling; review login flows", assessment: eval:authn-l1 }
+      2: { can: "Implement password, MFA and token-based authentication securely", assessment: eval:authn-l2 }
+      3: { can: "Design authentication architecture across services", assessment: eval:authn-l3 }
+    requires:
+      1:
+        all:
+          - { skill: identity-fundamentals, level: 1, rationale: "Authentication proves an identity; the identity model must be understood first" }
+      2:
+        all:
+          - { skill: cryptography-basics, level: 1, rationale: "Implementing token signing, hashing and storage requires knowing the primitives" }
+    expires_after: 180d
+
+  - id: oauth-oidc
+    name: OAuth 2.x / OpenID Connect
+    version: 1.0.0
+    skill_path: skills/oauth-oidc/SKILL.md
+    specializes: [authn]
+    levels:
+      1: { can: "Explain grant types, tokens, scopes; review an OAuth/OIDC integration", assessment: eval:oidc-l1 }
+      2: { can: "Implement OIDC login and token validation correctly", assessment: eval:oidc-l2 }
+      3: { can: "Design federation and token architecture across services", assessment: eval:oidc-l3 }
+    requires:
+      1:
+        all:
+          - { skill: authn, level: 1, rationale: "OAuth/OIDC is a specific authentication and delegation protocol" }
+      2:
+        all:
+          - { skill: authn, level: 2, rationale: "Token validation mistakes are authn implementation mistakes" }
+    expires_after: 180d
+
+  - id: authz
+    name: Authorization
+    version: 1.0.0
+    skill_path: skills/authz/SKILL.md
+    complements: [policy-as-code]
+    levels:
+      1: { can: "Explain RBAC/ABAC/ReBAC; find missing or broken access checks in review", assessment: eval:authz-l1 }
+      2: { can: "Implement consistent, centralised access checks for a service", assessment: eval:authz-l2 }
+      3: { can: "Design the authorization model and decision architecture for a system", assessment: eval:authz-l3 }
+    requires:
+      1:
+        all:
+          - { skill: identity-fundamentals, level: 1, rationale: "Authorization decides what an identity may do" }
+      2:
+        all:
+          - { skill: authn, level: 1, rationale: "Access checks are only sound on an authenticated principal" }
+    expires_after: 180d
+
+  - id: secrets-management
+    name: Secrets Management
+    version: 1.0.0
+    skill_path: skills/secrets-management/SKILL.md
+    levels:
+      1: { can: "Spot hard-coded or leaked secrets; explain rotation and scoping", assessment: eval:secrets-l1 }
+      2: { can: "Integrate a secrets manager with rotation and scoped access", assessment: eval:secrets-l2 }
+      3: { can: "Design secret lifecycle and workload credential strategy", assessment: eval:secrets-l3 }
+    requires:
+      1:
+        all:
+          - { skill: cryptography-basics, level: 1, rationale: "Secrets are keys and credentials; their properties come from crypto" }
+      2:
+        all:
+          - { skill: authz, level: 1, rationale: "Scoped secret access is an authorization problem" }
+    expires_after: 180d
+
+  - id: pki-mtls
+    name: PKI and mTLS
+    version: 1.0.0
+    skill_path: skills/pki-mtls/SKILL.md
+    levels:
+      1: { can: "Explain certificates, chains, trust stores and mTLS; review TLS config", assessment: eval:pki-l1 }
+      2: { can: "Configure mTLS between services with rotation", assessment: eval:pki-l2 }
+      3: { can: "Design a workload identity/PKI hierarchy", assessment: eval:pki-l3 }
+    requires:
+      1:
+        all:
+          - { skill: cryptography-basics, level: 1, rationale: "PKI is built on signatures and asymmetric keys" }
+      2:
+        all:
+          - { skill: cryptography-basics, level: 2, rationale: "Configuring key and cert lifecycles needs correct primitive use" }
+          - { skill: secrets-management, level: 1, rationale: "Private keys are secrets and need rotation and scoping" }
+    expires_after: 180d
+
+  - id: network-segmentation
+    name: Network Segmentation
+    version: 1.0.0
+    skill_path: skills/network-segmentation/SKILL.md
+    levels:
+      1: { can: "Explain segmentation, micro-segmentation, egress control; review network policy", assessment: eval:netseg-l1 }
+      2: { can: "Implement network policies / security groups for a workload", assessment: eval:netseg-l2 }
+      3: { can: "Design segmentation for an environment", assessment: eval:netseg-l3 }
+    requires:
+      1:
+        all:
+          - { skill: security-fundamentals, level: 1, rationale: "Segmentation is least privilege applied to the network" }
+    expires_after: 365d
+
+  - id: observability
+    name: Security Logging and Observability
+    version: 1.0.0
+    skill_path: skills/observability/SKILL.md
+    levels:
+      1: { can: "Identify which security events must be logged; review log hygiene", assessment: eval:obs-l1 }
+      2: { can: "Implement structured audit logging and alerting for a service", assessment: eval:obs-l2 }
+      3: { can: "Design detection and audit architecture", assessment: eval:obs-l3 }
+    requires:
+      1:
+        all:
+          - { skill: security-fundamentals, level: 1, rationale: "What to log follows from the threat and accountability goals" }
+    expires_after: 365d
+
+  - id: policy-as-code
+    name: Policy as Code
+    version: 1.0.0
+    skill_path: skills/policy-as-code/SKILL.md
+    levels:
+      1: { can: "Read and review policies (e.g. OPA/Rego, Cedar)", assessment: eval:pac-l1 }
+      2: { can: "Write and test authorization policies as code", assessment: eval:pac-l2 }
+      3: { can: "Design policy distribution, testing and governance", assessment: eval:pac-l3 }
+    requires:
+      1:
+        all:
+          - { skill: authz, level: 1, rationale: "Policies encode authorization decisions" }
+      2:
+        all:
+          - { skill: authz, level: 2, rationale: "Writing policy needs the ability to implement authz correctly" }
+    expires_after: 180d
+
+  - id: threat-modeling
+    name: Threat Modeling
+    version: 1.0.0
+    skill_path: skills/threat-modeling/SKILL.md
+    levels:
+      1: { can: "Apply STRIDE to a simple design with guidance", assessment: eval:tm-l1 }
+      2: { can: "Threat-model a service and derive concrete mitigations", assessment: eval:tm-l2 }
+      3: { can: "Run threat modeling for a system and set risk priorities", assessment: eval:tm-l3 }
+    requires:
+      1:
+        all:
+          - { skill: security-fundamentals, level: 1, rationale: "Threat modeling applies security principles to a design" }
+      2:
+        any:
+          - { skill: authn, level: 1, rationale: "Mitigations must be expressible in at least one control domain" }
+          - { skill: authz, level: 1, rationale: "Mitigations must be expressible in at least one control domain" }
+          - { skill: network-segmentation, level: 1, rationale: "Mitigations must be expressible in at least one control domain" }
+    expires_after: 365d
+
+  - id: zero-trust
+    name: Zero Trust Architecture
+    version: 1.0.0
+    skill_path: skills/zero-trust/SKILL.md
+    complements: [policy-as-code, observability]
+    levels:
+      1: { can: "Explain ZT principles (never trust, always verify; per-request decisions); review a ZT proposal", assessment: eval:zt-l1 }
+      2: { can: "Implement ZT controls for a service: identity-aware access, per-request authz, strong workload identity", assessment: eval:zt-l2 }
+      3: { can: "Design a ZT architecture and migration plan; may spawn subagents for component work", assessment: eval:zt-l3 }
+    requires:
+      1:
+        all:
+          - { skill: authz, level: 1, rationale: "ZT replaces network trust with explicit authorization decisions" }
+          - { skill: network-segmentation, level: 1, rationale: "ZT is defined against the perimeter model it replaces" }
+      2:
+        all:
+          - { skill: authz, level: 2, rationale: "Per-request policy decisions are authz implementation" }
+          - { skill: authn, level: 2, rationale: "Every request needs a strongly authenticated principal" }
+        any:
+          - { skill: pki-mtls, level: 1, rationale: "Workload identity needs mTLS or an equivalent" }
+          - { skill: oauth-oidc, level: 1, rationale: "Workload identity needs mTLS or an equivalent (token-based)" }
+      3:
+        all:
+          - { skill: policy-as-code, level: 2, rationale: "ZT at scale needs centrally governed, testable policy" }
+          - { skill: threat-modeling, level: 2, rationale: "Architecture decisions must be driven by an explicit threat model" }
+          - { skill: observability, level: 2, rationale: "Continuous verification depends on audit signals" }
+    recommends:
+      2:
+        - { skill: observability, level: 1 }
+    expires_after: 180d

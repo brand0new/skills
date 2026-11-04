@@ -1,0 +1,12 @@
+{
+  "name": "brand0new",
+  "description": "Brandon Verzuu's personal skills for Claude Code.",
+  "owner": { "name": "Brandon Verzuu" },
+  "plugins": [
+    {
+      "name": "writing-style",
+      "source": "./plugins/writing-style",
+      "description": "Write and edit in Brandon Verzuu's voice."
+    }
+  ]
+}

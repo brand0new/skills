@@ -1,0 +1,6 @@
+{
+  "name": "git-workflow",
+  "version": "1.0.0",
+  "description": "Take a change from branch to production through a pull request, and clean up worktrees and branches afterwards.",
+  "author": { "name": "Brandon Verzuu" }
+}

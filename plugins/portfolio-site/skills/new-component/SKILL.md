@@ -14,6 +14,10 @@ pseudo-code below is a decision template, not literal code: walk it top to botto
 The site profile (`site-profile` skill) names the components folder and the conventions
 document. Read the conventions document first.
 
+The profile also names the design system. Read its interface-copy section before you write
+any UI text: labels, buttons, link text, empty states, metadata. Never take UI copy rules
+from my voice guide; that covers signed long-form writing only.
+
 If the site has none, read three or four existing components, then the global stylesheet
 and the token file, and write down what they agree on using
 [references/conventions-checklist.md](references/conventions-checklist.md). Propose that

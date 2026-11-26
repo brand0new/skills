@@ -10,7 +10,8 @@ that means. This skill finds the guide, applies it, and checks the result before
 over.
 
 It doesn't cover code, UI copy, or content in a client's or employer's brand voice: those
-follow their own guidelines.
+follow their own guidelines. Interface copy (labels, buttons, navigation, metadata) follows
+the project's design system, in its interface-copy or content section, not my voice guide.
 
 ## 1. Find my voice guide
 

@@ -41,6 +41,7 @@ Read by the portfolio-site skills.
 - **Articles**: `src/content/articles/<slug>.md`, schema `articles` in `src/content.config.ts`
   - Tags: reuse the existing ones (list them, or say where to find them)
 - **Voice guide**: `<path to VOICE.md>`, when it isn't at the repo root or `~/.agents/voice/`
+- **Design system**: `<link or path>`, interface copy in its "Interface copy" section
 - **Covers**: `public/articles/<slug>/cover.png`, 1200×630, made with `npm run cover:generate`
 - **Explainers**: `npm run explainer:render`, docs in `scripts/explainers/README.md`
 - **Bookmarks**: `src/content/bookmarks.yml` (`url`, `label`)

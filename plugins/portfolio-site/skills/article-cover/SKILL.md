@@ -17,7 +17,7 @@ Without a treatment, the cover is the cropped source image as is.
 
 Use one of these, in order:
 
-1. An image attached to the originating issue, or supplied by the owner.
+1. An image attached to the originating issue, or one I supply.
 2. An openly licensed image (Wikimedia Commons, Openverse, Unsplash). Search with a one-word
    summary of the article's topic, plus its most relevant tag if that's too broad. Pick a
    picture with strong shapes and clear tonal range when the site's treatment reduces
@@ -27,8 +27,8 @@ For an open-licence image, record the author, the licence (SPDX id or name) and 
 found it on. Don't use anything without a licence that allows reuse. Never use an image
 generated to look like a photo of a real person, place or event.
 
-If none of those hosts is reachable (sandboxed agents are often blocked from them), ask the
-owner for a picture rather than drawing a vector stand-in. Flat shapes have no tonal range
+If none of those hosts is reachable (sandboxed agents are often blocked from them), ask me
+for a picture rather than drawing a vector stand-in. Flat shapes have no tonal range
 and look broken under most treatments.
 
 ## 2. Crop and prepare

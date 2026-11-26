@@ -1,8 +1,13 @@
 # skills
 
-Brandon Verzuu's skills toolkit, published as a Claude Code plugin marketplace. Each plugin
-groups the skills for one kind of work. The skills are plain `SKILL.md` procedures, so any
-agent that reads skills can use them, not only Claude Code.
+A skills toolkit, published as a Claude Code plugin marketplace. Each plugin groups the skills
+for one kind of work. The skills are plain `SKILL.md` procedures, so any agent that reads
+skills can use them, not only Claude Code.
+
+The skills are written in the first person, from the point of view of whoever is prompting the
+agent: "my voice", "my site", "ask me". Nothing personal is built in. What differs per person
+or per project (a voice guide, a site profile) lives in your own files, and the skills tell
+the agent where to find them.
 
 ## Install in Claude Code
 
@@ -28,15 +33,20 @@ Shipping changes through pull requests on any repository.
 
 ### writing
 
-Writing and editing in Brandon's voice, with the checks that keep a ghostwritten piece honest.
+Writing and editing in your own voice, with the checks that keep a ghostwritten piece honest.
 
 | Skill | What it does |
 | --- | --- |
-| `my-writing-style` | His voice, condensed, with the full measured style guide as a reference |
+| `voice-guide` | Build your voice guide and fingerprint norms from your own published writing |
+| `my-writing-style` | Write and edit anything that goes out under your name, following your guide |
 | `ghostwrite` | Note → outline and questions → researched, self-critiqued, fact-checked draft |
 | `fact-check` | Primary-source research, claim tracing and a bundled link checker |
-| `fingerprint-scrub` | A bundled deterministic scrub against his corpus norms |
-| `social-post` | The LinkedIn post announcing a published piece, for him to post |
+| `fingerprint-scrub` | A bundled deterministic scrub against your measured norms |
+| `social-post` | The post announcing a published piece, for you to post yourself |
+
+Start with `voice-guide`. It writes `VOICE.md` and `fingerprint-norms.json`, by default to
+`~/.agents/voice/`. A project can have its own guide instead: put `VOICE.md` at the repository
+root, or name its path in the project's `AGENTS.md`.
 
 The bundled scripts need Node 18 or later and nothing else.
 
@@ -52,7 +62,7 @@ skills work on any site.
 | `content-inbox` | Issue-driven inbox: trust boundary, labels as state, routing |
 | `publish-article` | Note to live article, using `ghostwrite` and `ship-change` |
 | `new-bookmark` | Add a link with a clean URL and a factual label |
-| `new-project` | Add or update a project entry from the owner's facts |
+| `new-project` | Add or update a project entry from your own facts |
 | `new-component` | Add a component that follows the site's conventions |
 | `article-cover` | Source, license, crop and treat an article's cover |
 | `article-explainer` | A looping animated explainer video for a technical article |

@@ -30,17 +30,17 @@ site doesn't have:
 ```markdown
 ## Site profile
 
-Read by the portfolio-site skills (brand0new/skills).
+Read by the portfolio-site skills.
 
-- **Owner**: `<github-login>`, the only account whose issues and comments count
+- **Owner**: `<my-github-login>`, the only account whose issues and comments count
 - **Site URL**: https://example.com
 - **Default branch**: `main`, deployed by <host> on every push
 - **Build**: `npm ci && npm run build` (the same command CI runs)
 - **Dev server**: `npm run dev`
 - **Agent may merge its own PRs**: yes, once required checks pass / no, a human merges
 - **Articles**: `src/content/articles/<slug>.md`, schema `articles` in `src/content.config.ts`
-  - Voice examples: `<slug-a>` (reflective), `<slug-b>` (technical)
   - Tags: reuse the existing ones (list them, or say where to find them)
+- **Voice guide**: `<path to VOICE.md>`, when it isn't at the repo root or `~/.agents/voice/`
 - **Covers**: `public/articles/<slug>/cover.png`, 1200×630, made with `npm run cover:generate`
 - **Explainers**: `npm run explainer:render`, docs in `scripts/explainers/README.md`
 - **Bookmarks**: `src/content/bookmarks.yml` (`url`, `label`)
@@ -52,7 +52,7 @@ Read by the portfolio-site skills (brand0new/skills).
   the writing plugin's bundled ones
 ```
 
-Ask the owner for what you can't derive, above all the merge autonomy: never assume an
+Ask me for what you can't derive, above all the merge autonomy: never assume an
 agent may merge.
 
 ## 3. Save it

@@ -2,22 +2,29 @@
 // Mechanical fingerprint scrub for ghostwritten drafts (writing plugin).
 //
 // Deterministic, non-LLM pass over an article's prose body, checked against
-// the measured targets in my-writing-style/references/style-guide.md §1 and the
-// anti-pattern list in §9. Catches things prompting alone tends to miss
-// because they're below the level a system prompt operates at (sentence
-// rhythm, punctuation rate) or because a model can satisfy the letter of an
-// instruction ("vary paragraph length") while still missing it in practice.
+// the measured targets in the author's voice guide (its "measurable
+// fingerprint") and a list of generated-text anti-patterns. Catches things
+// prompting alone tends to miss because they're below the level a system
+// prompt operates at (sentence rhythm, punctuation rate) or because a model
+// can satisfy the letter of an instruction ("vary paragraph length") while
+// still missing it in practice.
 //
-// This is deliberately corpus-calibrated, not a generic AI-writing linter:
-// some checks a generic tool would run (e.g. "flag curly quotes") are
-// intentionally omitted here because Brandon's own published corpus uses
-// them in roughly half its articles — see lib/fingerprint-patterns.mjs
-// for the full rationale on what's included and why.
+// It's meant to be corpus-calibrated, not a generic AI-writing linter: run
+// --measure over the author's own published writing to get their norms, and
+// pass that file with --norms. Without --norms it falls back to DEFAULT_NORMS
+// below, which suit short-paragraph, blog-style prose. Some checks a generic
+// tool would run (e.g. "flag curly quotes") are omitted on purpose because
+// plenty of human writers use them — see lib/fingerprint-patterns.mjs for the
+// rationale on what's included and why.
 //
 // Usage:
-//   node scripts/scrub-fingerprint.mjs --file <draft>.md
+//   node scripts/scrub-fingerprint.mjs --file <draft>.md [--norms <norms>.json]
 //   node scripts/scrub-fingerprint.mjs --file <path> --fix
 //   node scripts/scrub-fingerprint.mjs --file <path> --json
+//   node scripts/scrub-fingerprint.mjs --measure <published-1>.md <published-2>.md ...
+//
+// --measure reads the author's published pieces and prints a norms JSON to
+// stdout. Save it next to the voice guide and pass it with --norms.
 //
 // --fix only applies the FIXABLE_SUBSTITUTIONS / FIXABLE_SENTENCE_PATTERNS
 // tables (safe, meaning-preserving, mechanical). Everything else is
@@ -37,25 +44,71 @@ import {
   FLAGGED_PATTERNS,
 } from "./lib/fingerprint-patterns.mjs";
 
-// Corpus norms from style-guide.md §1. "target" is the measured mean;
-// "flagAbove"/"flagBelow" are the thresholds this script actually alerts
-// on — set looser than the raw target so normal article-to-article
-// variance doesn't trigger false positives. These numbers came from
-// eleven articles, not eleven thousand; treat them as a smell detector,
-// not a hard gate.
-const NORMS = {
+// Default norms, used when no --norms file is given. "target" is the mean to
+// write to; "flagAbove"/"flagBelow" are the thresholds this script actually
+// alerts on — set looser than the target so normal piece-to-piece variance
+// doesn't trigger false positives. Treat them as a smell detector, not a
+// hard gate. Measure your own with --measure: a corpus of a dozen pieces is
+// enough to beat these defaults.
+const DEFAULT_NORMS = {
   wordsPerSentenceMean: { target: 17, flagAbove: 22 },
-  maxReasonableSentenceWords: 35, // style guide: "essentially absent" above this
+  maxReasonableSentenceWords: 35,
   singleSentenceParagraphShare: { target: 0.5, flagBelow: 0.3 },
   shortPunchSentenceShare: { target: 0.1, flagBelow: 0.03 },
-  // Individual articles vary a lot around the ~2/1000 corpus mean (observed
-  // range across the 13 published articles: 0-5/1000). flagAbove is set
-  // above the observed single-article max so a normal article doesn't trip
-  // this on its own, while a clearly heavier LLM-provider habit still does.
+  // Single pieces vary a lot around a corpus mean, so flagAbove sits above
+  // the heaviest single piece: a normal piece doesn't trip it on its own,
+  // while a clearly heavier LLM-provider habit still does.
   emDashPer1000Words: { target: 2, flagAbove: 7 },
   emojiPer1000Words: { target: 1, flagAbove: 2 },
-  boldSpansPer1000WordsEN: { target: 10, flagAbove: 20 },
+  boldSpansPer1000Words: { target: 10, flagAbove: 20 },
 };
+
+let NORMS = DEFAULT_NORMS;
+
+// Shallow-merges a norms file over the defaults, so a file may set only the
+// keys it measured.
+async function loadNorms(file) {
+  const raw = JSON.parse(await readFile(file, "utf-8"));
+  const merged = { ...DEFAULT_NORMS };
+  for (const key of Object.keys(DEFAULT_NORMS)) {
+    if (raw[key] === undefined) continue;
+    merged[key] =
+      typeof DEFAULT_NORMS[key] === "object"
+        ? { ...DEFAULT_NORMS[key], ...raw[key] }
+        : raw[key];
+  }
+  return merged;
+}
+
+const round = (n, places = 0) => Number(n.toFixed(places));
+
+// Derives norms from the author's published pieces. Targets are corpus
+// means; thresholds leave room for piece-to-piece variance.
+function measureNorms(pieces) {
+  const all = pieces.map((p) => analyze(p.body));
+  const mean = (xs) => xs.reduce((a, b) => a + b, 0) / (xs.length || 1);
+  const max = (xs) => Math.max(0, ...xs);
+  const words = all.flatMap((s) => s.sentenceWordCounts).sort((a, b) => a - b);
+  const p98 = words[Math.floor(words.length * 0.98)] ?? 35;
+  const sentenceMean = mean(all.map((s) => s.meanSentenceWords));
+  const single = mean(all.map((s) => s.singleSentenceShare));
+  const punch = mean(all.map((s) => s.shortPunchShare));
+  const rate = (key) => ({
+    target: round(mean(all.map((s) => s[key])), 1),
+    flagAbove: round(Math.max(max(all.map((s) => s[key])) + 1, mean(all.map((s) => s[key])) * 2), 1),
+  });
+  return {
+    measuredFrom: pieces.map((p) => p.file),
+    totalWords: all.reduce((a, s) => a + s.totalWords, 0),
+    wordsPerSentenceMean: { target: round(sentenceMean, 1), flagAbove: round(sentenceMean * 1.3, 1) },
+    maxReasonableSentenceWords: Math.max(p98, 20),
+    singleSentenceParagraphShare: { target: round(single, 2), flagBelow: round(single * 0.6, 2) },
+    shortPunchSentenceShare: { target: round(punch, 2), flagBelow: round(punch * 0.3, 2) },
+    emDashPer1000Words: rate("emDashPer1000"),
+    emojiPer1000Words: rate("emojiPer1000"),
+    boldSpansPer1000Words: rate("boldSpansPer1000"),
+  };
+}
 
 const GENERIC_HEADINGS = [
   "introduction",
@@ -155,9 +208,9 @@ function analyze(body) {
   );
 
   // Last non-empty block is a bullet/numbered list -> likely a
-  // summary-bullet ending, the loudest closing tell per style-guide.md §4/§9.
+  // summary-bullet ending, a common closing tell of generated text.
   // Excluded: a "## Links" (or "More on this topic") section is an
-  // explicitly sanctioned closing device (§4) — a sourced link list is not
+  // legitimate closing device — a sourced link list is not
   // the same tell as a bullet recap of the article's own points.
   const blocks = body
     .split(/\n\s*\n/)
@@ -176,6 +229,7 @@ function analyze(body) {
   return {
     totalWords,
     meanSentenceWords,
+    sentenceWordCounts,
     longSentences,
     shortPunchShare,
     singleSentenceShare,
@@ -235,18 +289,40 @@ function applyFixes(body) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
+  const argv = process.argv.slice(2);
+  const args = parseArgs(argv);
+  // npm runs workspace scripts from the workspace directory, so resolve paths
+  // against the directory the command was typed in (INIT_CWD) instead.
+  const resolve = (p) => path.resolve(process.env.INIT_CWD ?? process.cwd(), p);
+
+  if (args.measure) {
+    const files = argv.slice(argv.indexOf("--measure") + 1).filter((a) => !a.startsWith("--"));
+    if (files.length === 0) {
+      console.error("Usage: node scripts/scrub-fingerprint.mjs --measure <file> [<file> ...]");
+      process.exitCode = 1;
+      return;
+    }
+    const pieces = [];
+    for (const f of files) {
+      pieces.push({ file: f, body: splitFrontmatter(await readFile(resolve(f), "utf-8")).body });
+    }
+    console.log(JSON.stringify(measureNorms(pieces), null, 2));
+    return;
+  }
+
   if (!args.file) {
     console.error(
-      "Usage: node scripts/scrub-fingerprint.mjs --file <path> [--fix] [--json]",
+      "Usage: node scripts/scrub-fingerprint.mjs --file <path> [--norms <file>] [--fix] [--json]\n" +
+        "       node scripts/scrub-fingerprint.mjs --measure <file> [<file> ...]",
     );
     process.exitCode = 1;
     return;
   }
 
-  // npm runs workspace scripts from the workspace directory, so resolve --file
-  // against the directory the command was typed in (INIT_CWD) instead.
-  const file = path.resolve(process.env.INIT_CWD ?? process.cwd(), args.file);
+  if (typeof args.norms === "string") NORMS = await loadNorms(resolve(args.norms));
+  const normsLabel = typeof args.norms === "string" ? "your target" : "default target";
+
+  const file = resolve(args.file);
   const raw = await readFile(file, "utf-8");
   const { frontmatter, body: originalBody } = splitFrontmatter(raw);
 
@@ -267,47 +343,47 @@ async function main() {
   const smells = [];
   if (stats.meanSentenceWords > NORMS.wordsPerSentenceMean.flagAbove) {
     smells.push(
-      `Mean sentence length ${stats.meanSentenceWords.toFixed(1)} words (corpus target ~${NORMS.wordsPerSentenceMean.target}, flag above ${NORMS.wordsPerSentenceMean.flagAbove}).`,
+      `Mean sentence length ${stats.meanSentenceWords.toFixed(1)} words (${normsLabel} ~${NORMS.wordsPerSentenceMean.target}, flag above ${NORMS.wordsPerSentenceMean.flagAbove}).`,
     );
   }
   if (stats.longSentences.length > 0) {
     smells.push(
-      `${stats.longSentences.length} sentence(s) over ${NORMS.maxReasonableSentenceWords} words (corpus has essentially none): "${stats.longSentences[0].slice(0, 80)}..."`,
+      `${stats.longSentences.length} sentence(s) over ${NORMS.maxReasonableSentenceWords} words (above the ${normsLabel === "your target" ? "usual" : "default"} maximum): "${stats.longSentences[0].slice(0, 80)}..."`,
     );
   }
   if (stats.singleSentenceShare < NORMS.singleSentenceParagraphShare.flagBelow) {
     smells.push(
-      `Only ${(stats.singleSentenceShare * 100).toFixed(0)}% of paragraphs are single-sentence (corpus target ~${NORMS.singleSentenceParagraphShare.target * 100}%). Uniform paragraph length is the loudest tell per style-guide.md §9.`,
+      `Only ${(stats.singleSentenceShare * 100).toFixed(0)}% of paragraphs are single-sentence (${normsLabel} ~${NORMS.singleSentenceParagraphShare.target * 100}%). Uniform paragraph length is one of the loudest tells of generated text.`,
     );
   }
   if (stats.shortPunchShare < NORMS.shortPunchSentenceShare.flagBelow) {
     smells.push(
-      `Only ${(stats.shortPunchShare * 100).toFixed(1)}% of sentences are short punch sentences under 8 words (corpus target ~${NORMS.shortPunchSentenceShare.target * 100}%).`,
+      `Only ${(stats.shortPunchShare * 100).toFixed(1)}% of sentences are short punch sentences under 8 words (${normsLabel} ~${NORMS.shortPunchSentenceShare.target * 100}%).`,
     );
   }
   if (stats.emDashPer1000 > NORMS.emDashPer1000Words.flagAbove) {
     smells.push(
-      `Em dash rate ${stats.emDashPer1000.toFixed(1)}/1000 words (corpus target ~${NORMS.emDashPer1000Words.target}/1000, flag above ${NORMS.emDashPer1000Words.flagAbove}). Classic LLM-provider tic.`,
+      `Em dash rate ${stats.emDashPer1000.toFixed(1)}/1000 words (${normsLabel} ~${NORMS.emDashPer1000Words.target}/1000, flag above ${NORMS.emDashPer1000Words.flagAbove}). Classic LLM-provider tic.`,
     );
   }
   if (stats.emojiPer1000 > NORMS.emojiPer1000Words.flagAbove) {
     smells.push(
-      `Emoji rate ${stats.emojiPer1000.toFixed(1)}/1000 words (corpus target <${NORMS.emojiPer1000Words.target}/1000).`,
+      `Emoji rate ${stats.emojiPer1000.toFixed(1)}/1000 words (${normsLabel} <${NORMS.emojiPer1000Words.target}/1000).`,
     );
   }
-  if (stats.boldSpansPer1000 > NORMS.boldSpansPer1000WordsEN.flagAbove) {
+  if (stats.boldSpansPer1000 > NORMS.boldSpansPer1000Words.flagAbove) {
     smells.push(
-      `Bold span rate ${stats.boldSpansPer1000.toFixed(1)}/1000 words (EN corpus target ~${NORMS.boldSpansPer1000WordsEN.target}/1000, flag above ${NORMS.boldSpansPer1000WordsEN.flagAbove}). Note: Dutch articles run ~2.5x heavier per style-guide.md §7 — don't apply this threshold to a Dutch draft.`,
+      `Bold span rate ${stats.boldSpansPer1000.toFixed(1)}/1000 words (${normsLabel} ~${NORMS.boldSpansPer1000Words.target}/1000, flag above ${NORMS.boldSpansPer1000Words.flagAbove}). Languages can differ a lot here: measure separate norms per language.`,
     );
   }
   if (stats.genericHeadings.length > 0) {
     smells.push(
-      `Generic/structural heading(s) used: ${stats.genericHeadings.join(", ")}. Style guide §9/§6: headings should be evocative, never labels.`,
+      `Generic/structural heading(s) used: ${stats.genericHeadings.join(", ")}. Headings that only label a section are a common tell of generated text.`,
     );
   }
   if (stats.endsOnBulletList) {
     smells.push(
-      `Article ends on a bullet/numbered list. Style guide §4/§9: never end with a summary-bullet recap — he lands on a line, not a list.`,
+      `Article ends on a bullet/numbered list. A summary-bullet recap is a common tell: land on a line, not a list.`,
     );
   }
 

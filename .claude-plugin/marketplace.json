@@ -1,6 +1,6 @@
 {
   "name": "brand0new",
-  "description": "Brandon Verzuu's skills toolkit: plugins for shipping code, writing in his voice and running a personal portfolio site.",
+  "description": "A skills toolkit: plugins for shipping code, writing in your own voice and running a personal portfolio site.",
   "owner": { "name": "Brandon Verzuu" },
   "plugins": [
     {
@@ -11,7 +11,7 @@
     {
       "name": "writing",
       "source": "./plugins/writing",
-      "description": "Write and edit in Brandon Verzuu's voice: ghostwrite from a note, fact-check, scrub the machine fingerprint and draft the post that shares it."
+      "description": "Write and edit in your own voice: build a voice guide from your writing, ghostwrite from a note, fact-check, scrub the machine fingerprint and draft the post that shares it."
     },
     {
       "name": "portfolio-site",

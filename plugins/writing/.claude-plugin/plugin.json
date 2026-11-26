@@ -1,6 +1,6 @@
 {
   "name": "writing",
   "version": "1.0.0",
-  "description": "Write and edit in Brandon Verzuu's voice: ghostwrite from a note, fact-check, scrub the machine fingerprint and draft the post that shares it.",
+  "description": "Write and edit in your own voice: build a voice guide from your writing, ghostwrite from a note, fact-check, scrub the machine fingerprint and draft the post that shares it.",
   "author": { "name": "Brandon Verzuu" }
 }

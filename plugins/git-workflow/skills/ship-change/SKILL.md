@@ -26,7 +26,7 @@ Find these once per repository, and reuse them for the rest of the run:
 - Work on a branch, never directly on the default branch. When several agents work at
   once, give each task its own git worktree so they don't share a checkout.
 - Name it `<agent-or-area>/<short-kebab-description>`, for example
-  `claude/article-arazzo` or `design/equal-card-heights`, unless the repo has its own
+  `claude/fix-login-redirect` or `design/equal-card-heights`, unless the repo has its own
   pattern.
 
 ## 2. Commit

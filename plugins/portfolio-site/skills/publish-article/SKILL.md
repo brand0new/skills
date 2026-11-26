@@ -1,37 +1,36 @@
 ---
 name: publish-article
-description: Turn a captured note into a published article on a personal portfolio site — ghostwritten draft, frontmatter that matches the site's content schema, images, cover, optional explainer, PR, merge and a post to share. Use for a `draft-article` inbox issue, or when the owner pastes raw note text and asks for it to become an article or blog post on their site. Agent-agnostic.
+description: Turn a captured note into a published article on a personal portfolio site — ghostwritten draft, frontmatter that matches the site's content schema, images, cover, optional explainer, PR, merge and a post to share. Use for a `draft-article` inbox issue, or when I paste raw note text and ask for it to become an article or blog post on my site. Agent-agnostic.
 ---
 
 # Publish an article
 
-Takes a raw note to a live article: an outline the owner agrees to, a full draft in their
-voice, a cover, an explainer where the piece is technical, a merged PR and a post for them
+Takes a raw note to a live article: an outline I agree to, a full draft in my
+voice, a cover, an explainer where the piece is technical, a merged PR and a post for me
 to share. On a static site, a merged PR is the only publish step.
 
 This skill leans on two other plugins from the same marketplace:
 
 - **writing**: `ghostwrite` writes the draft (with `fact-check` and `fingerprint-scrub`), and
-  `social-post` writes the announcement. If the owner isn't Brandon, use their own voice
-  guide instead of `my-writing-style`, and follow the same procedure.
+  `social-post` writes the announcement. Both use my voice guide (see `my-writing-style`).
 - **git-workflow**: `ship-change` takes the article through the PR.
 
 Read the site profile first (`site-profile` skill). It names the articles folder, the
-schema, the cover convention, the voice examples and whether an agent may merge.
+schema, the cover convention, the voice guide and whether an agent may merge.
 
 ## Inbox protocol
 
 For a `draft-article` issue, the `content-inbox` skill comes first: the trust boundary, the
-claim, how to ask and how to close. An article takes **two runs**, with the owner's reply in
+claim, how to ask and how to close. An article takes **two runs**, with my reply in
 between:
 
 | Run | Starts when | Does | Ends with |
 | --- | --- | --- | --- |
 | Outline | the note arrives | step 1 | an outline and questions on the issue, `needs-input` |
-| Article | the owner replies | steps 2 to 8 | a merged PR, a post to share, a closed issue |
+| Article | I reply | steps 2 to 8 | a merged PR, a post to share, a closed issue |
 
 A note pasted into a chat, with no issue, goes through the same steps. The outline goes to
-the owner in the chat instead, and nothing is skipped: not the research, not the
+me in the chat instead, and nothing is skipped: not the research, not the
 fact-check, not the cover.
 
 ## Procedure
@@ -41,8 +40,8 @@ fact-check, not the cover.
    `needs-input`, remove `in-progress` and stop. Don't open a PR yet.
 
 2. **Draft.** Fold in the reply and follow `ghostwrite` steps 3 to 8: research, draft,
-   self-critique, fingerprint scrub, fact-check. Use the profile's voice examples as the
-   articles to read in full. Keep the hand-over lists: they become the PR body.
+   self-critique, fingerprint scrub, fact-check, with the voice guide the profile names. Keep
+   the hand-over lists: they become the PR body.
 
 3. **Frontmatter.** Match the site's article schema exactly: a missing or mistyped field
    fails the build. Copy the shape of a recent article, then check each field against the
@@ -57,12 +56,12 @@ fact-check, not the cover.
    - **tags**: reuse the existing vocabulary before minting a new tag. Prefer an existing
      tag to a near-synonym.
    - **draft or published flag**: the PR is the gate, not the flag. A future date doesn't
-     schedule anything either: the article is live the moment the PR merges. If the owner
-     wants it out later, leave the PR open and merge it on that day.
+     schedule anything either: the article is live the moment the PR merges. If I
+     want it out later, leave the PR open and merge it on that day.
 
 4. **Images.** Download images attached to the issue to the article's public asset folder
    and reference them with root-relative paths. Custom markdown blocks the site supports
-   (pull quotes, sidenotes, highlights) are the owner's choice, not decoration: don't add
+   (pull quotes, sidenotes, highlights) are my choice, not decoration: don't add
    them unless the note marks them.
 
 5. **Cover.** Not optional, ever, including for a note pasted in chat with no issue: that's

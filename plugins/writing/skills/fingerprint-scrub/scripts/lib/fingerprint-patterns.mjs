@@ -9,11 +9,11 @@
 //              wrong clause could change meaning), so these are reported
 //              with line numbers but never auto-edited.
 //
-// Sources: my-writing-style/references/style-guide.md §9 (Brandon's specific anti-pattern list, the
+// Sources: the voice-guide template's anti-pattern list (my-writing-style, the
 // primary reference) and the `humanizer` skill's generic AI-writing pattern
-// list (used only where it doesn't conflict with something the corpus
-// actually does — e.g. the corpus itself uses em dashes and question marks
-// heavily, so those are rate-checked against corpus norms, not banned).
+// list (used only where it doesn't conflict with what human writers
+// commonly do — e.g. many writers use em dashes and question marks
+// heavily, so those are rate-checked against the author's norms, not banned).
 
 // --- FIXABLE: whole-phrase substitutions, meaning-preserving -------------
 // [pattern (case-insensitive), replacement]. Replacement '' deletes the
@@ -51,7 +51,7 @@ export const FIXABLE_SENTENCE_PATTERNS = [
 ];
 
 // --- FLAGGED: regex patterns to report with line numbers, never auto-fix -
-// Grouped to match style-guide.md §9 categories.
+// Grouped to match the anti-pattern categories in the voice-guide template.
 export const FLAGGED_PATTERNS = [
   {
     name: "significance inflation",

@@ -1,6 +1,6 @@
 ---
 name: new-project
-description: Add or update a project on a portfolio site's projects page — collect every fact from the owner, add the thumbnail they supply, and write the entry to match the site's content schema. Use for a `draft-project` inbox issue, or when the owner asks to add, change or archive a project on their site. Agent-agnostic.
+description: Add or update a project on a portfolio site's projects page — collect every fact from me, add the thumbnail I supply, and write the entry to match the site's content schema. Use for a `draft-project` inbox issue, or when I ask to add, change or archive a project on my site. Agent-agnostic.
 ---
 
 # New project
@@ -15,36 +15,36 @@ claim and the closing comment.
 
 ## 1. Collect the facts
 
-Everything about a project is a fact about something the owner built, so all of it comes
-from them. Don't fill a gap from the project's own site or repository without asking: that's
-a suggestion to put to them, not a source.
+Everything about a project is a fact about something I built, so all of it comes
+from me. Don't fill a gap from the project's own site or repository without asking: that's
+a suggestion to put to me, not a source.
 
 Typical fields:
 
 | Field | Notes |
 | --- | --- |
-| name | as the owner writes it |
+| name | as I write it |
 | url | where the entry links to; it must resolve |
-| description | one sentence on what it does. Tidy their wording, don't sell it |
-| status | free text, their call: `WIP`, `Live`, `Archived` |
+| description | one sentence on what it does. Tidy my wording, don't sell it |
+| status | free text, my call: `WIP`, `Live`, `Archived` |
 | open source | yes or no |
-| thumbnail | the image they supply (step 2) |
-| styling fields | accent colour, font and the like, only when they ask |
+| thumbnail | the image I supply (step 2) |
+| styling fields | accent colour, font and the like, only when I ask |
 
 If a required field is missing from the issue, ask for exactly the missing ones in one
 comment (`content-inbox` step 5).
 
-To **update** a project, edit its existing entry and change only what they asked for.
+To **update** a project, edit its existing entry and change only what I asked for.
 
 ## 2. Thumbnail
 
 Use the image attached to the issue, in the format and size the existing thumbnails use
-(prefer SVG when they do). If no image is attached, ask for one. Don't draw a logo for their
-project yourself, and don't take one from the project's site without their say-so.
+(prefer SVG when they do). If no image is attached, ask for one. Don't draw a logo for my
+project yourself, and don't take one from the project's site without my say-so.
 
 ## 3. Write the entry
 
-- A new project goes at the end of the order, unless they name a position. If the order
+- A new project goes at the end of the order, unless I name a position. If the order
   lives in filenames, renumbering other entries to make room is fine as long as nothing
   links to the filenames.
 - A custom accent colour must stay readable in every theme the site has. Check it on the

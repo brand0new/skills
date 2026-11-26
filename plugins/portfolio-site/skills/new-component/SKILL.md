@@ -17,7 +17,7 @@ document. Read the conventions document first.
 If the site has none, read three or four existing components, then the global stylesheet
 and the token file, and write down what they agree on using
 [references/conventions-checklist.md](references/conventions-checklist.md). Propose that
-document to the owner as part of this PR: the next component shouldn't have to rediscover
+document to me as part of this PR: the next component shouldn't have to rediscover
 it.
 
 ## 1. Classify it

@@ -1,0 +1,22 @@
+{
+  "name": "brand0new",
+  "description": "A skills toolkit: plugins for shipping code, writing in your own voice and running a personal portfolio site.",
+  "owner": { "name": "Brandon Verzuu" },
+  "plugins": [
+    {
+      "name": "git-workflow",
+      "source": "./plugins/git-workflow",
+      "description": "Take a change from branch to production through a pull request, and clean up worktrees and branches afterwards."
+    },
+    {
+      "name": "writing",
+      "source": "./plugins/writing",
+      "description": "Write and edit in your own voice: build a voice guide from your writing, ghostwrite from a note, fact-check, scrub the machine fingerprint and draft the post that shares it."
+    },
+    {
+      "name": "portfolio-site",
+      "source": "./plugins/portfolio-site",
+      "description": "Develop and maintain a personal portfolio site: an issue-driven content inbox, articles, bookmarks, projects, covers, explainers and components."
+    }
+  ]
+}
